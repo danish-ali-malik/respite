@@ -1,0 +1,10 @@
+node_modules
+dist
+.output
+.wxt
+*.local
+.DS_Store
+.vite
+*.log
+.chrome-profile
+agent-tools
