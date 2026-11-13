@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Pack extension zip
+        run: |
+          cd dist
+          zip -r ../respite-extension.zip .
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: respite-extension.zip
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            1. Download `respite-extension.zip`
+            2. Unzip it
+            3. Open `chrome://extensions` → Developer mode → **Load unpacked**
+            4. Select the unzipped folder
+
+            Respite is a wellness habit tool, not a medical device.

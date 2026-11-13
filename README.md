@@ -8,6 +8,29 @@ Respite gently reminds you to look away from the screen every 20 minutes — wit
 
 ![Respite](public/icons/icon128.png)
 
+## Install (no build required)
+
+Works in Chrome, Edge, Brave, Arc, and other Chromium browsers.
+
+### Option A — Download the release zip (recommended)
+
+1. Open the [latest release](https://github.com/danish-ali-malik/respite/releases/latest)
+2. Download `respite-extension.zip`
+3. Unzip it somewhere permanent (not Downloads if your OS cleans that folder)
+4. Open `chrome://extensions` (or `edge://extensions`)
+5. Enable **Developer mode**
+6. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`)
+
+### Option B — Clone this repo
+
+```bash
+git clone https://github.com/danish-ali-malik/respite.git
+```
+
+Then **Load unpacked** and select the `dist/` folder inside the repo. A production build of the extension is committed so you can install without running Node.
+
+> Tip: Pin the extension after loading so it stays in your toolbar.
+
 ## Why Respite
 
 Long coding days are hard on eyes. Most people know the 20-20-20 rule and still forget it mid-debug. Existing reminders are often loud, guilt-heavy, or only work in one app.
@@ -29,30 +52,26 @@ Respite aims to be:
 - Local daily stats, adherence, and streak
 - Manifest V3 Chromium extension (Chrome, Edge, Brave, Arc, …)
 
-## Load unpacked (development)
+## Develop from source
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then in Chrome/Edge:
+Then load the `dist/` folder as an unpacked extension (CRXJS rebuilds it as you edit).
 
-1. Open `chrome://extensions`
-2. Enable **Developer mode**
-3. **Load unpacked** → select the `dist` folder Vite/CRX prints (usually `dist/`)
-
-For a production build:
+Production build:
 
 ```bash
 npm run build
 ```
 
-Load the generated `dist/` folder the same way.
+If you change source that affects the shipped extension, run `npm run build` and commit the updated `dist/` so installers stay in sync.
 
 ### Troubleshooting
 
-If `npm run dev` fails with `Cannot find native binding` / `@rolldown/binding-darwin-arm64`, you are on an older lockfile that pulled Vite 8 (Rolldown). Pull the latest `main`, then reinstall cleanly:
+If `npm run dev` fails with `Cannot find native binding` / `@rolldown/binding-*`, pull latest `main` and reinstall:
 
 ```bash
 rm -rf node_modules package-lock.json
@@ -81,6 +100,7 @@ MIT — see [LICENSE](LICENSE).
 ## Roadmap (not in MVP)
 
 - Firefox package
+- Chrome Web Store listing
 - Shared core for a future Tauri desktop companion
 - Optional VS Code integration
 - Optional team wellness features (privacy-preserving)

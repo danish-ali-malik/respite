@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Respite — Eye Care for Developers",
+  "short_name": "Respite",
+  "version": "0.1.0",
+  "description": "A calm 20-20-20 eye-break companion. Gentle reminders, idle awareness, local-only stats. Not a medical device.",
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "Respite",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "src/options/index.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "alarms",
+    "idle",
+    "notifications",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": []
+}

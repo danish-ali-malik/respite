@@ -1,5 +1,4 @@
 node_modules
-dist
 .output
 .wxt
 *.local
@@ -8,3 +7,4 @@ dist
 *.log
 .chrome-profile
 agent-tools
+*.zip

@@ -17,6 +17,7 @@ Load the `dist/` folder as an unpacked extension in Chrome/Edge (`chrome://exten
 - Avoid medical claims beyond temporary digital eye strain / habit support
 - Keep the break experience calm — no guilt copy, no forced unskippable overlays
 - Run `npm run typecheck` and `npm run build` before opening a PR
+- The production `dist/` folder is committed so people can install without Node. After UI or background changes, rebuild and include `dist/` in the same PR
 
 ## Project layout
 
