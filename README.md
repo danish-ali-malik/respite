@@ -50,6 +50,18 @@ npm run build
 
 Load the generated `dist/` folder the same way.
 
+### Troubleshooting
+
+If `npm run dev` fails with `Cannot find native binding` / `@rolldown/binding-darwin-arm64`, you are on an older lockfile that pulled Vite 8 (Rolldown). Pull the latest `main`, then reinstall cleanly:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
+This project pins **Vite 6** so installs work the same on macOS, Linux, and Windows.
+
 ## Scripts
 
 | Command | Purpose |
