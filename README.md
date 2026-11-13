@@ -1,106 +1,108 @@
 # Respite
 
-**A calm, open-source 20-20-20 eye-care companion for developers.**
+**Protect your eyes while you code.**
 
-Respite gently reminds you to look away from the screen every 20 minutes — without nagging, without accounts, and without shipping your data anywhere.
+Respite is a free, open-source Chrome extension that helps developers follow the 20-20-20 rule: every 20 minutes, look about 20 feet (6 metres) away for 20 seconds. Gentle reminders. Local-only data. No accounts.
 
-> Wellness habit tool. Not a medical device. See [docs/MEDICAL_DISCLAIMER.md](docs/MEDICAL_DISCLAIMER.md).
+[Install from the latest release](https://github.com/danish-ali-malik/respite/releases/latest) · [Load the `dist/` folder](#install) · [Privacy](docs/PRIVACY.md)
 
-![Respite](public/icons/icon128.png)
+> Respite is a wellness habit tool — not a medical device. It does not diagnose, treat, or prevent eye disease. See the [medical disclaimer](docs/MEDICAL_DISCLAIMER.md).
 
-## Install (no build required)
+---
 
-Works in Chrome, Edge, Brave, Arc, and other Chromium browsers.
+## Why Respite
 
-### Option A — Download the release zip (recommended)
+Long coding sessions are normal. Regular eye breaks are not.
 
-1. Open the [latest release](https://github.com/danish-ali-malik/respite/releases/latest)
-2. Download `respite-extension.zip`
-3. Unzip it somewhere permanent (not Downloads if your OS cleans that folder)
-4. Open `chrome://extensions` (or `edge://extensions`)
-5. Enable **Developer mode**
-6. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`)
+Most people know they should look away from the screen. Most forget — mid-debug, mid-PR, mid-deadline. Other reminder apps get disabled because they nag at the wrong time or feel like another productivity chore.
 
-### Option B — Clone this repo
+Respite is built for that gap:
+
+- **Quiet by default** — subtle notifications, easy snooze, easy skip
+- **Idle-aware** — pauses when you step away; no pile of alerts when you return
+- **Private** — settings and stats stay on your device; no analytics, no cloud
+- **Ready in seconds** — download the zip, load unpacked, start working
+
+Built by a developer, for developers who spend 8–12 hours a day on screens.
+
+---
+
+## Install
+
+Works with **Chrome**, **Edge**, **Brave**, **Arc**, and other Chromium browsers.
+
+### 1. Download
+
+Get **`respite-extension.zip`** from the [latest release](https://github.com/danish-ali-malik/respite/releases/latest).
+
+Or clone the repo and use the committed build:
 
 ```bash
 git clone https://github.com/danish-ali-malik/respite.git
 ```
 
-Then **Load unpacked** and select the `dist/` folder inside the repo. A production build of the extension is committed so you can install without running Node.
+### 2. Load in your browser
 
-> Tip: Pin the extension after loading so it stays in your toolbar.
+1. Open `chrome://extensions` (or `edge://extensions`)
+2. Turn on **Developer mode**
+3. Click **Load unpacked**
+4. Select the unzipped folder — or the repo’s `dist/` folder
 
-## Why Respite
+Pin Respite in the toolbar so you can pause, snooze, or take a break anytime.
 
-Long coding days are hard on eyes. Most people know the 20-20-20 rule and still forget it mid-debug. Existing reminders are often loud, guilt-heavy, or only work in one app.
+---
 
-Respite aims to be:
+## What you get
 
-- **Almost zero friction** — load the extension and go
-- **Quiet** — idle-aware, snoozeable, skippable
-- **Local-only** — settings and stats stay on your machine
-- **Honest** — no disease-prevention claims
-
-## Features (MVP)
-
-- Configurable work interval (default 20 minutes) and break length (default 20 seconds)
-- Gentle desktop notification + calming full-tab break screen
-- Pause / resume / snooze / take a break now
-- Idle awareness via the browser Idle API
-- Quiet hours
-- Local daily stats, adherence, and streak
-- Manifest V3 Chromium extension (Chrome, Edge, Brave, Arc, …)
-
-## Develop from source
-
-```bash
-npm install
-npm run dev
-```
-
-Then load the `dist/` folder as an unpacked extension (CRXJS rebuilds it as you edit).
-
-Production build:
-
-```bash
-npm run build
-```
-
-If you change source that affects the shipped extension, run `npm run build` and commit the updated `dist/` so installers stay in sync.
-
-### Troubleshooting
-
-If `npm run dev` fails with `Cannot find native binding` / `@rolldown/binding-*`, pull latest `main` and reinstall:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
-
-This project pins **Vite 6** so installs work the same on macOS, Linux, and Windows.
-
-## Scripts
-
-| Command | Purpose |
+| | |
 |---|---|
-| `npm run dev` | Extension dev server with HMR |
-| `npm run build` | Production build into `dist/` |
-| `npm run typecheck` | TypeScript check |
+| **20-20-20 reminders** | Default 20-minute work / 20-second break — fully configurable |
+| **Calm break screen** | Full-tab countdown with a clear look-away prompt |
+| **Smart idle detection** | Uses the browser Idle API so away time isn’t treated as screen time |
+| **Snooze & pause** | Postpone a break or pause for deep focus without uninstalling |
+| **Quiet hours** | Silence reminders overnight or on your schedule |
+| **Local habit stats** | Breaks completed, skipped, adherence, and streak — stored only on your machine |
+
+No sign-up. No tracking. No network requests.
+
+---
+
+## How it works
+
+1. Respite runs quietly in the background while you browse and work.
+2. When your work interval ends, you get a gentle notification and an optional break screen.
+3. Look into the distance for a few seconds, blink naturally, then continue.
+4. Skip or snooze whenever you need to — no guilt, no lockouts.
+
+The 20-20-20 habit is widely recommended by eye-care organizations to help ease temporary digital eye strain from prolonged screen use. Results vary; Respite helps you practice the habit, nothing more.
+
+---
 
 ## Privacy
 
-No analytics. No accounts. No network calls. Details: [docs/PRIVACY.md](docs/PRIVACY.md).
+- Data stays in `chrome.storage.local`
+- No accounts, telemetry, or remote servers
+- Permissions are limited to alarms, idle detection, notifications, storage, and tabs (to open the break screen)
+
+Full details: [docs/PRIVACY.md](docs/PRIVACY.md)
+
+---
+
+## Develop
+
+```bash
+npm install
+npm run dev      # HMR — load dist/ as unpacked
+npm run build    # production build into dist/
+npm run typecheck
+```
+
+After source changes that affect the shipped extension, run `npm run build` and commit `dist/` so installers stay current.
+
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
-
-## Roadmap (not in MVP)
-
-- Firefox package
-- Chrome Web Store listing
-- Shared core for a future Tauri desktop companion
-- Optional VS Code integration
-- Optional team wellness features (privacy-preserving)
+[MIT](LICENSE) · Free to use, share, and improve.
