@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Respite — Eye care companion for developers</title>
+    <meta
+      name="description"
+      content="Respite is a free open-source Chrome extension for the 20-20-20 eye-break habit. Privacy-first, local-only, built for developers."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1a2b28;
+        --soft: #3d524c;
+        --pine: #2f6f5e;
+        --foam: #f4f8f7;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #eef4f2, var(--foam));
+        line-height: 1.55;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 24px 72px;
+      }
+      h1 { font-size: 2.4rem; margin: 0 0 8px; letter-spacing: -0.02em; }
+      .lead { color: var(--soft); font-size: 1.1rem; }
+      a { color: var(--pine); }
+      .card {
+        margin-top: 28px;
+        padding: 20px 22px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(26,43,40,0.06);
+      }
+      ul { padding-left: 1.2rem; }
+      .muted { color: var(--soft); font-size: 0.92rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Respite</h1>
+      <p class="lead">
+        A calm, open-source 20-20-20 eye-care companion for developers.
+      </p>
+      <div class="card">
+        <p><strong>Get it</strong></p>
+        <ul>
+          <li>
+            <a href="https://github.com/danish-ali-malik/respite/releases/latest"
+              >Latest release (install zip)</a
+            >
+          </li>
+          <li>
+            <a href="https://github.com/danish-ali-malik/respite">Source on GitHub</a>
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <p><strong>Policies</strong></p>
+        <ul>
+          <li><a href="./privacy.html">Privacy Policy</a></li>
+          <li><a href="./medical.html">Medical Disclaimer</a></li>
+        </ul>
+      </div>
+      <p class="muted">
+        Respite is a wellness habit tool — not a medical device.
+      </p>
+    </main>
+  </body>
+</html>

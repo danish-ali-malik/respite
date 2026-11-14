@@ -84,7 +84,9 @@ The 20-20-20 habit is widely recommended by eye-care organizations to help ease 
 - No accounts, telemetry, or remote servers
 - Permissions are limited to alarms, idle detection, notifications, storage, and tabs (to open the break screen)
 
-Full details: [docs/PRIVACY.md](docs/PRIVACY.md)
+Full policy: [Privacy Policy](https://danish-ali-malik.github.io/respite/privacy.html) · [source](docs/PRIVACY.md)
+
+Chrome Web Store submission kit (icons, screenshots, listing copy): [`store/`](store/)
 
 ---
 
