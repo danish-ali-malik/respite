@@ -48,21 +48,18 @@ export function BreakScreen() {
     if (timer.status !== "break") return;
     completedRef.current = true;
     setDone(true);
-    void sendMessage({ type: "COMPLETE_BREAK" }).then(() => {
-      window.setTimeout(() => window.close(), 1600);
-    });
+    // Service worker restores the previous work tab and closes this break tab
+    void sendMessage({ type: "COMPLETE_BREAK" });
   }, [remainingSec, timer]);
 
   async function skip() {
     completedRef.current = true;
     await sendMessage({ type: "SKIP_BREAK" });
-    window.close();
   }
 
   async function snooze() {
     completedRef.current = true;
     await sendMessage({ type: "SNOOZE" });
-    window.close();
   }
 
   return (

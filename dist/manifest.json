@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Respite — Eye Care for Developers",
   "short_name": "Respite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A calm 20-20-20 eye-break companion. Gentle reminders, idle awareness, local-only stats. Not a medical device.",
   "action": {
     "default_popup": "src/popup/index.html",

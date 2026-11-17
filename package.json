@@ -1,6 +1,6 @@
 {
   "name": "respite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Respite — lightweight 20-20-20 eye care companion for developers",
   "directories": {
     "doc": "docs"

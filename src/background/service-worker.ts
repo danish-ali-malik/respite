@@ -18,6 +18,9 @@ import {
 const WORK_ALARM = "respite-work";
 const BREAK_ALARM = "respite-break";
 const BREAK_URL = "src/break/index.html";
+const RETURN_TAB_KEY = "returnTabId";
+const RETURN_WINDOW_KEY = "returnWindowId";
+const NOTIFICATION_DISMISS_MS = 6_000;
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
@@ -212,6 +215,7 @@ async function snooze() {
   const settings = await getSettings();
   await recordBreak("snoozed");
   await clearAlarms();
+  await restoreWorkTabAndCloseBreak();
   await startWorkCycle(settings.snoozeMinutes * 60_000);
 }
 
@@ -228,6 +232,7 @@ async function onWorkComplete() {
 async function beginBreak() {
   const settings = await getSettings();
   await clearAlarms();
+  await captureReturnTab();
 
   const breakEndsAt = Date.now() + settings.breakSeconds * 1000;
   await saveTimerState({
@@ -241,21 +246,99 @@ async function beginBreak() {
   await updateBadge("break", settings.breakSeconds * 1000);
 
   if (settings.notificationsEnabled) {
-    await chrome.notifications.create(`respite-break-${Date.now()}`, {
-      type: "basic",
-      iconUrl: "icons/icon128.png",
-      title: "Time for a short eye break",
-      message: `Look about 20 feet (6 m) away for ${settings.breakSeconds} seconds.`,
-      buttons: [{ title: "Start break" }, { title: "Snooze" }],
-      priority: 2,
-      requireInteraction: true,
-    });
+    await showBreakNotification(settings.breakSeconds);
   }
 
   await openBreakPage();
 }
 
+async function showBreakNotification(breakSeconds: number) {
+  const id = `respite-break-${Date.now()}`;
+  await chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title: "Time for a short eye break",
+    message: `Look about 20 feet (6 m) away for ${breakSeconds} seconds.`,
+    buttons: [{ title: "Start break" }, { title: "Snooze" }],
+    priority: 1,
+    requireInteraction: false,
+  });
+  // Auto-dismiss banner so it doesn't linger in the tray
+  setTimeout(() => {
+    void chrome.notifications.clear(id);
+  }, NOTIFICATION_DISMISS_MS);
+}
+
+async function captureReturnTab() {
+  try {
+    const [active] = await chrome.tabs.query({
+      active: true,
+      lastFocusedWindow: true,
+    });
+    if (!active?.id) return;
+
+    const extensionOrigin = chrome.runtime.getURL("");
+    // Don't overwrite with the break page or other extension pages
+    if (active.url?.startsWith(extensionOrigin)) return;
+
+    await chrome.storage.session.set({
+      [RETURN_TAB_KEY]: active.id,
+      [RETURN_WINDOW_KEY]: active.windowId,
+    });
+  } catch {
+    // Session storage / tab query may fail in rare cases — ignore
+  }
+}
+
+async function restoreWorkTabAndCloseBreak() {
+  const data = await chrome.storage.session.get([
+    RETURN_TAB_KEY,
+    RETURN_WINDOW_KEY,
+  ]);
+  const tabId = data[RETURN_TAB_KEY] as number | undefined;
+  const windowId = data[RETURN_WINDOW_KEY] as number | undefined;
+  await chrome.storage.session.remove([RETURN_TAB_KEY, RETURN_WINDOW_KEY]);
+
+  if (tabId != null) {
+    try {
+      await chrome.tabs.update(tabId, { active: true });
+      if (windowId != null) {
+        await chrome.windows.update(windowId, { focused: true });
+      }
+    } catch {
+      // Previous tab may have been closed
+    }
+  }
+
+  const breakUrl = chrome.runtime.getURL(BREAK_URL);
+  const breakTabs = await chrome.tabs.query({ url: breakUrl });
+  await Promise.all(
+    breakTabs
+      .map((tab) => tab.id)
+      .filter((id): id is number => typeof id === "number")
+      .map((id) => chrome.tabs.remove(id).catch(() => undefined)),
+  );
+
+  await clearBreakNotifications();
+}
+
+async function clearBreakNotifications() {
+  try {
+    const all = await chrome.notifications.getAll();
+    await Promise.all(
+      Object.keys(all)
+        .filter((id) => id.startsWith("respite-break"))
+        .map((id) => chrome.notifications.clear(id)),
+    );
+  } catch {
+    // ignore
+  }
+}
+
 async function openBreakPage() {
+  // Capture again in case beginBreak wasn't the entry point (e.g. notification click)
+  await captureReturnTab();
+
   const url = chrome.runtime.getURL(BREAK_URL);
   const tabs = await chrome.tabs.query({ url });
   if (tabs[0]?.id) {
@@ -272,11 +355,15 @@ async function completeBreak() {
   await recordBreak("completed");
   await clearAlarms();
   await startWorkCycle();
+  // Brief pause so the break screen can show the completed state
+  await new Promise((resolve) => setTimeout(resolve, 900));
+  await restoreWorkTabAndCloseBreak();
 }
 
 async function skipBreak() {
   await recordBreak("skipped");
   await clearAlarms();
+  await restoreWorkTabAndCloseBreak();
   await startWorkCycle();
 }
 
