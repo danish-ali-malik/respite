@@ -364,10 +364,20 @@ async function ensureStandUpScheduled(remainingMs?: number) {
     return;
   }
 
-  const duration =
-    remainingMs ??
-    timer.standPausedRemainingMs ??
-    settings.standUpMinutes * 60_000;
+  // Preserve an in-flight stand-up deadline across eye-break cycles unless a
+  // new duration is explicitly requested (settings change, snooze, fresh start).
+  let duration: number | null = null;
+  if (remainingMs != null) {
+    duration = remainingMs;
+  } else if (timer.standPausedRemainingMs != null && timer.standPausedRemainingMs > 0) {
+    duration = timer.standPausedRemainingMs;
+  } else if (timer.standUpEndsAt != null && timer.standUpEndsAt > Date.now() + 1000) {
+    await chrome.alarms.create(STAND_UP_ALARM, { when: timer.standUpEndsAt });
+    return;
+  } else {
+    duration = Math.max(1, settings.standUpMinutes) * 60_000;
+  }
+
   const standUpEndsAt = Date.now() + Math.max(5_000, duration);
   await saveTimerState({
     ...timer,
@@ -379,8 +389,10 @@ async function ensureStandUpScheduled(remainingMs?: number) {
 
 async function rescheduleStandUpFromSettings(settings: Settings) {
   await chrome.alarms.clear(STAND_UP_ALARM);
+  const timer = await getTimerState();
+  const nextMs = Math.max(1, settings.standUpMinutes) * 60_000;
+
   if (!settings.standUpEnabled) {
-    const timer = await getTimerState();
     await saveTimerState({
       ...timer,
       standUpEndsAt: null,
@@ -388,9 +400,21 @@ async function rescheduleStandUpFromSettings(settings: Settings) {
     });
     return;
   }
-  const timer = await getTimerState();
+
   if (timer.status === "running" || timer.status === "break") {
-    await ensureStandUpScheduled(settings.standUpMinutes * 60_000);
+    // Apply the new interval immediately from now.
+    await saveTimerState({ ...timer, standPausedRemainingMs: null });
+    await ensureStandUpScheduled(nextMs);
+    return;
+  }
+
+  if (timer.status === "paused" || timer.status === "idle") {
+    // Pick up the new interval on resume.
+    await saveTimerState({
+      ...timer,
+      standUpEndsAt: null,
+      standPausedRemainingMs: nextMs,
+    });
   }
 }
 

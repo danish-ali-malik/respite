@@ -140,9 +140,9 @@ export function Options() {
               <>
                 <NumberField
                   label="Stand-up every (minutes)"
-                  hint="A gentle nudge to stand and stretch — try 30 or 60."
+                  hint="A gentle nudge to stand and stretch. Use 1–5 to test; 30 or 60 for daily use."
                   value={settings.standUpMinutes}
-                  min={15}
+                  min={1}
                   max={180}
                   onChange={(standUpMinutes) =>
                     void save({ ...settings, standUpMinutes })
@@ -151,7 +151,7 @@ export function Options() {
                 <NumberField
                   label="Stand duration (seconds)"
                   value={settings.standUpSeconds}
-                  min={15}
+                  min={10}
                   max={180}
                   onChange={(standUpSeconds) =>
                     void save({ ...settings, standUpSeconds })

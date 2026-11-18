@@ -178,7 +178,7 @@ const popupShot = framePage({
   body: "Eye breaks and stand-up nudges — pause, snooze, or take one now without leaving your flow.",
   iframeSrc: "/raw/popup",
   width: 340,
-  iframeHeight: 620,
+  iframeHeight: 660,
 });
 
 const optionsShot = `<!doctype html>

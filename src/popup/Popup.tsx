@@ -115,6 +115,19 @@ export function Popup() {
         <p className="mt-2 text-xs text-ink-soft">
           {settings.workMinutes} min work · {settings.breakSeconds}s break
         </p>
+        {settings.standUpEnabled &&
+          timer.status === "running" &&
+          timer.standUpEndsAt != null &&
+          timer.standUpEndsAt > now && (
+            <div className="mt-3 flex items-baseline justify-between border-t border-ink/5 pt-3">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-soft">
+                Next stand-up
+              </p>
+              <p className="font-display text-xl tabular-nums tracking-tight text-ink">
+                {formatCountdown(timer.standUpEndsAt - now)}
+              </p>
+            </div>
+          )}
       </div>
 
       <div className="mx-5 mb-4 grid grid-cols-4 gap-2 text-center">
@@ -155,11 +168,6 @@ export function Popup() {
                 Snooze {settings.snoozeMinutes}m
               </button>
             </div>
-            {settings.standUpEnabled && (
-              <p className="text-center text-[11px] text-ink-soft">
-                Stand-up nudge every {settings.standUpMinutes} min
-              </p>
-            )}
           </>
         )}
 

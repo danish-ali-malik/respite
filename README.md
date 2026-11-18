@@ -57,7 +57,7 @@ Pin Respite in the toolbar so you can pause, snooze, or take a break anytime.
 | | |
 |---|---|
 | **20-20-20 reminders** | Default 20-minute work / 20-second break — fully configurable |
-| **Stand-up nudges** | Optional reminder every 30–60 minutes to stand and stretch |
+| **Stand-up nudges** | Optional reminder on your interval (from 1 minute up) to stand and stretch |
 | **Calm break screens** | Full-tab countdown for eye breaks and stand-ups |
 | **Smart idle detection** | Uses the browser Idle API so away time isn’t treated as screen time |
 | **Snooze & pause** | Postpone a break or pause for deep focus without uninstalling |

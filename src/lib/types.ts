@@ -13,7 +13,7 @@ export interface Settings {
   autoStart: boolean;
   /** Gentle stand-and-stretch nudges (separate from eye breaks). */
   standUpEnabled: boolean;
-  /** Minutes between stand-up nudges (e.g. 30 or 60). */
+  /** Minutes between stand-up nudges (1–180; Chrome alarms ≈1 min minimum). */
   standUpMinutes: number;
   /** How long the stand-up screen stays open (seconds). */
   standUpSeconds: number;
