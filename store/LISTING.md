@@ -90,24 +90,19 @@ English
 
 ---
 
-## Graphic assets
+## Graphic assets (ready to upload)
 
-| Asset | Path | Notes for 0.1.2 |
+All screenshots are **1280×800** PNG.
+
+| Order | File | Shows |
 |---|---|---|
-| Store icon | `store/icons/icon-128.png` | Keep |
-| Screenshot 1 — Popup | `store/screenshots/01-popup-1280x800.png` | Prefer a fresh capture showing “Stand up now” |
-| Screenshot 2 — Eye break | `store/screenshots/02-break-1280x800.png` | Keep |
-| Screenshot 3 — Settings | `store/screenshots/03-settings-1280x800.png` | Prefer a fresh capture showing stand-up settings |
-| Screenshot 4 — Stand up | *(capture locally)* | **Add this** — stand screen is the new feature |
-| Small promo tile | `store/promo/small-tile-440x280.png` | Optional keep |
-| Marquee | `store/promo/marquee-1400x560.png` | Optional; text still fine |
-
-### How to capture a stand-up screenshot (1280×800)
-1. Load unpacked `dist/`
-2. Popup → **Stand up now**
-3. Screenshot the stand tab (or use a 1280×800 window)
-4. Upload as an extra store screenshot
-
+| 1 | `store/screenshots/01-popup-1280x800.png` | Popup with eye break + stand up |
+| 2 | `store/screenshots/02-break-1280x800.png` | Eye-break screen |
+| 3 | `store/screenshots/03-stand-1280x800.png` | Stand-up screen |
+| 4 | `store/screenshots/04-settings-1280x800.png` | Settings with stand-up nudges |
+| Icon | `store/icons/icon-128.png` | Store icon |
+| Optional | `store/promo/small-tile-440x280.png` | Small promo tile |
+| Optional | `store/promo/marquee-1400x560.png` | Marquee promo |
 ---
 
 ## Privacy practices tab
