@@ -1,6 +1,6 @@
-# Chrome Web Store listing kit (v0.1.3)
+# Chrome Web Store listing kit (v0.1.2)
 
-Use these fields when you submit the **0.1.3** update in the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+Use these fields when you submit the **0.1.2** update in the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 
 Privacy policy URL:
 
@@ -10,7 +10,7 @@ Privacy policy URL:
 
 ## Package to upload
 
-https://github.com/danish-ali-malik/respite/releases/tag/v0.1.3 → `respite-extension.zip`
+https://github.com/danish-ali-malik/respite/releases/tag/v0.1.2 → `respite-extension.zip`
 
 Or:
 
@@ -19,7 +19,7 @@ git pull && npm install && npm run build
 cd dist && zip -r ../respite-extension.zip .
 ```
 
-Manifest version must be **0.1.3** (larger than published **0.1.2** / **0.1.1**).
+Manifest version must be **0.1.2** (larger than published **0.1.1** / **0.1.0**).
 
 ---
 
@@ -27,14 +27,14 @@ Manifest version must be **0.1.3** (larger than published **0.1.2** / **0.1.1**)
 
 | Item | Action |
 |---|---|
-| Package | Upload new zip (**0.1.3**) |
+| Package | Upload new zip (**0.1.2**) |
 | Short description | Replace with copy below |
 | Detailed description | Replace with copy below |
 | Screenshots | **Replace all 4** with files in `store/screenshots/` |
 | Icon / promo tiles | No change required |
 | Privacy policy URL | Same URL (still valid) |
 | Single purpose | Replace with copy below |
-| Permission justifications | Keep as below (same as 0.1.2) |
+| Permission justifications | Keep as below |
 | Data usage | Still leave all collection boxes **unchecked**; certify all 3 |
 | Test instructions | Replace with copy below |
 
