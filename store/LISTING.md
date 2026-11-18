@@ -42,11 +42,12 @@ Built for developers and other heavy computer users who forget to take breaks mi
 
 WHAT YOU GET
 • Configurable work interval and break length (defaults to 20 / 20)
-• Quiet notifications and a calming full-tab break screen
+• Optional stand-up nudges (e.g. every 30 or 60 minutes) to stretch during long sitting
+• Quiet notifications and calming full-tab break / stand screens
 • Idle awareness — pauses when you step away
 • Snooze, pause, skip, or take a break now
 • Quiet hours for nights and focus blocks
-• Local habit stats (completed, skipped, streak) — stored only on your device
+• Local habit stats (completed, stood, skipped, streak) — stored only on your device
 
 PRIVACY FIRST
 No accounts. No analytics. No network requests. Settings and stats stay in local storage on your computer.

@@ -69,6 +69,12 @@ export async function saveTimerState(timer: TimerState): Promise<void> {
 export async function getStats(): Promise<Stats> {
   const data = await chrome.storage.local.get(KEYS.stats);
   const raw = { ...DEFAULT_STATS, ...(data[KEYS.stats] as Partial<Stats> | undefined) };
+  // Backfill fields added in later versions
+  raw.today = { ...emptyDayStats(raw.today?.date ?? todayKey()), ...raw.today };
+  raw.history = (raw.history ?? []).map((d) => ({
+    ...emptyDayStats(d.date),
+    ...d,
+  }));
   const rolled = rollStats(raw);
   if (rolled !== raw) {
     await chrome.storage.local.set({ [KEYS.stats]: rolled });
@@ -84,7 +90,7 @@ export async function recordBreak(
   kind: "completed" | "skipped" | "snoozed",
 ): Promise<Stats> {
   const stats = await getStats();
-  const today = { ...stats.today };
+  const today = { ...emptyDayStats(stats.today.date), ...stats.today };
   today[kind] += 1;
 
   let streak = stats.streak;
@@ -102,6 +108,15 @@ export async function recordBreak(
   }
 
   const next: Stats = { ...stats, today, streak, lastActiveDate };
+  await saveStats(next);
+  return next;
+}
+
+export async function recordStand(): Promise<Stats> {
+  const stats = await getStats();
+  const today = { ...emptyDayStats(stats.today.date), ...stats.today };
+  today.stood += 1;
+  const next: Stats = { ...stats, today };
   await saveStats(next);
   return next;
 }

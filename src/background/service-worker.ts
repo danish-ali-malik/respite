@@ -3,6 +3,7 @@ import {
   getSettings,
   getTimerState,
   recordBreak,
+  recordStand,
   saveSettings,
   saveTimerState,
 } from "../lib/storage";
@@ -17,7 +18,10 @@ import {
 
 const WORK_ALARM = "respite-work";
 const BREAK_ALARM = "respite-break";
+const STAND_UP_ALARM = "respite-stand-up";
+const STAND_ALARM = "respite-stand";
 const BREAK_URL = "src/break/index.html";
+const STAND_URL = "src/stand/index.html";
 const RETURN_TAB_KEY = "returnTabId";
 const RETURN_WINDOW_KEY = "returnWindowId";
 const NOTIFICATION_DISMISS_MS = 6_000;
@@ -30,6 +34,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       await startWorkCycle();
     }
     await chrome.runtime.openOptionsPage().catch(() => undefined);
+  } else if (details.reason === "update") {
+    // Ensure new settings defaults merge in for existing installs
+    const settings = await getSettings();
+    await saveSettings(settings);
+    await restoreOrStart();
   }
 });
 
@@ -54,7 +63,6 @@ chrome.idle.onStateChanged.addListener(async (state) => {
   if (state === "idle" || state === "locked") {
     if (timer.status === "running") {
       const remaining = Math.max(0, (timer.workEndsAt ?? Date.now()) - Date.now());
-      // Long idle counts as a natural break — reset when they return
       if (remaining > 0) {
         await pauseTimer(true);
       }
@@ -62,10 +70,8 @@ chrome.idle.onStateChanged.addListener(async (state) => {
     return;
   }
 
-  // active again
   if (timer.status === "idle" || timer.status === "paused") {
     const idleMs = settings.idleThresholdMinutes * 60_000;
-    // If they were away long enough, start a fresh work cycle
     const away = Date.now() - timer.updatedAt;
     if (away >= idleMs) {
       await startWorkCycle();
@@ -80,6 +86,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await onWorkComplete();
   } else if (alarm.name === BREAK_ALARM) {
     await onBreakComplete();
+  } else if (alarm.name === STAND_UP_ALARM) {
+    await onStandUpDue();
+  } else if (alarm.name === STAND_ALARM) {
+    await onStandComplete();
   }
 });
 
@@ -87,17 +97,24 @@ chrome.notifications.onClicked.addListener(async (id) => {
   if (id.startsWith("respite-break")) {
     await openBreakPage();
     await chrome.notifications.clear(id);
+  } else if (id.startsWith("respite-stand")) {
+    await openStandPage();
+    await chrome.notifications.clear(id);
   }
 });
 
 chrome.notifications.onButtonClicked.addListener(async (id, buttonIndex) => {
-  if (!id.startsWith("respite-break")) return;
-  if (buttonIndex === 0) {
-    await openBreakPage();
-  } else if (buttonIndex === 1) {
-    await snooze();
+  if (id.startsWith("respite-break")) {
+    if (buttonIndex === 0) await openBreakPage();
+    else if (buttonIndex === 1) await snooze();
+    await chrome.notifications.clear(id);
+    return;
   }
-  await chrome.notifications.clear(id);
+  if (id.startsWith("respite-stand")) {
+    if (buttonIndex === 0) await openStandPage();
+    else if (buttonIndex === 1) await snoozeStand();
+    await chrome.notifications.clear(id);
+  }
 });
 
 chrome.runtime.onMessage.addListener((message: Message, _sender, sendResponse) => {
@@ -138,9 +155,30 @@ chrome.runtime.onMessage.addListener((message: Message, _sender, sendResponse) =
         await openBreakPage();
         sendResponse({ ok: true });
         break;
+      case "OPEN_STAND":
+        await openStandPage();
+        sendResponse({ ok: true });
+        break;
+      case "STAND_NOW":
+        await beginStand();
+        sendResponse({ type: "STATE", payload: await getAllState() });
+        break;
+      case "SKIP_STAND":
+        await skipStand();
+        sendResponse({ type: "STATE", payload: await getAllState() });
+        break;
+      case "COMPLETE_STAND":
+        await completeStand();
+        sendResponse({ type: "STATE", payload: await getAllState() });
+        break;
+      case "SNOOZE_STAND":
+        await snoozeStand();
+        sendResponse({ type: "STATE", payload: await getAllState() });
+        break;
       case "SETTINGS_UPDATED":
         await saveSettings(message.settings);
         await applyIdleThreshold(message.settings);
+        await rescheduleStandUpFromSettings(message.settings);
         sendResponse({ type: "STATE", payload: await getAllState() });
         break;
       default:
@@ -155,46 +193,68 @@ async function applyIdleThreshold(settings: Settings) {
   chrome.idle.setDetectionInterval(seconds);
 }
 
-async function clearAlarms() {
+async function clearEyeAlarms() {
   await chrome.alarms.clear(WORK_ALARM);
   await chrome.alarms.clear(BREAK_ALARM);
+}
+
+async function clearStandAlarms() {
+  await chrome.alarms.clear(STAND_UP_ALARM);
+  await chrome.alarms.clear(STAND_ALARM);
 }
 
 async function startWorkCycle(remainingMs?: number) {
   const settings = await getSettings();
   await applyIdleThreshold(settings);
-  await clearAlarms();
+  await clearEyeAlarms();
 
   const duration = remainingMs ?? settings.workMinutes * 60_000;
   const workEndsAt = Date.now() + duration;
+  const prev = await getTimerState();
 
   const timer: TimerState = {
+    ...prev,
     status: "running",
     workEndsAt,
     breakEndsAt: null,
+    standEndsAt: null,
     pausedRemainingMs: null,
     updatedAt: Date.now(),
   };
   await saveTimerState(timer);
   await chrome.alarms.create(WORK_ALARM, { when: workEndsAt });
   await updateBadge("work", duration);
+  await ensureStandUpScheduled();
 }
 
 async function pauseTimer(asIdle: boolean) {
   const timer = await getTimerState();
-  if (timer.status !== "running" && timer.status !== "break") return;
+  if (timer.status !== "running" && timer.status !== "break" && timer.status !== "stand") {
+    return;
+  }
 
-  await clearAlarms();
+  await clearEyeAlarms();
+  await clearStandAlarms();
+
   let pausedRemainingMs: number | null = null;
   if (timer.status === "running" && timer.workEndsAt) {
     pausedRemainingMs = Math.max(0, timer.workEndsAt - Date.now());
   }
 
+  let standPausedRemainingMs: number | null = timer.standPausedRemainingMs;
+  if (timer.standUpEndsAt) {
+    standPausedRemainingMs = Math.max(0, timer.standUpEndsAt - Date.now());
+  }
+
   await saveTimerState({
+    ...timer,
     status: asIdle ? "idle" : "paused",
     workEndsAt: null,
     breakEndsAt: null,
+    standUpEndsAt: null,
+    standEndsAt: null,
     pausedRemainingMs,
+    standPausedRemainingMs,
     updatedAt: Date.now(),
   });
   await updateBadge(asIdle ? "idle" : "paused", pausedRemainingMs ?? 0);
@@ -214,15 +274,14 @@ async function resumeTimer() {
 async function snooze() {
   const settings = await getSettings();
   await recordBreak("snoozed");
-  await clearAlarms();
-  await restoreWorkTabAndCloseBreak();
+  await clearEyeAlarms();
+  await restoreWorkTabAndCloseOverlay();
   await startWorkCycle(settings.snoozeMinutes * 60_000);
 }
 
 async function onWorkComplete() {
   const settings = await getSettings();
   if (isInQuietHours(settings)) {
-    // Defer until quiet hours end — restart a short check in 5 minutes
     await startWorkCycle(5 * 60_000);
     return;
   }
@@ -231,14 +290,17 @@ async function onWorkComplete() {
 
 async function beginBreak() {
   const settings = await getSettings();
-  await clearAlarms();
+  await clearEyeAlarms();
   await captureReturnTab();
 
+  const prev = await getTimerState();
   const breakEndsAt = Date.now() + settings.breakSeconds * 1000;
   await saveTimerState({
+    ...prev,
     status: "break",
     workEndsAt: null,
     breakEndsAt,
+    standEndsAt: null,
     pausedRemainingMs: null,
     updatedAt: Date.now(),
   });
@@ -263,10 +325,181 @@ async function showBreakNotification(breakSeconds: number) {
     priority: 1,
     requireInteraction: false,
   });
-  // Auto-dismiss banner so it doesn't linger in the tray
   setTimeout(() => {
     void chrome.notifications.clear(id);
   }, NOTIFICATION_DISMISS_MS);
+}
+
+async function showStandNotification(standSeconds: number) {
+  const id = `respite-stand-${Date.now()}`;
+  await chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title: "Time to stand and stretch",
+    message: `Stand up for about ${standSeconds} seconds — a short reset for your back and shoulders.`,
+    buttons: [{ title: "Stand now" }, { title: "Snooze" }],
+    priority: 1,
+    requireInteraction: false,
+  });
+  setTimeout(() => {
+    void chrome.notifications.clear(id);
+  }, NOTIFICATION_DISMISS_MS);
+}
+
+async function ensureStandUpScheduled(remainingMs?: number) {
+  const settings = await getSettings();
+  await chrome.alarms.clear(STAND_UP_ALARM);
+  if (!settings.standUpEnabled) {
+    const timer = await getTimerState();
+    await saveTimerState({
+      ...timer,
+      standUpEndsAt: null,
+      standPausedRemainingMs: null,
+    });
+    return;
+  }
+
+  const timer = await getTimerState();
+  if (timer.status === "paused" || timer.status === "idle" || timer.status === "stand") {
+    return;
+  }
+
+  const duration =
+    remainingMs ??
+    timer.standPausedRemainingMs ??
+    settings.standUpMinutes * 60_000;
+  const standUpEndsAt = Date.now() + Math.max(5_000, duration);
+  await saveTimerState({
+    ...timer,
+    standUpEndsAt,
+    standPausedRemainingMs: null,
+  });
+  await chrome.alarms.create(STAND_UP_ALARM, { when: standUpEndsAt });
+}
+
+async function rescheduleStandUpFromSettings(settings: Settings) {
+  await chrome.alarms.clear(STAND_UP_ALARM);
+  if (!settings.standUpEnabled) {
+    const timer = await getTimerState();
+    await saveTimerState({
+      ...timer,
+      standUpEndsAt: null,
+      standPausedRemainingMs: null,
+    });
+    return;
+  }
+  const timer = await getTimerState();
+  if (timer.status === "running" || timer.status === "break") {
+    await ensureStandUpScheduled(settings.standUpMinutes * 60_000);
+  }
+}
+
+async function onStandUpDue() {
+  const settings = await getSettings();
+  const timer = await getTimerState();
+
+  if (!settings.standUpEnabled) return;
+
+  if (isInQuietHours(settings)) {
+    await ensureStandUpScheduled(5 * 60_000);
+    return;
+  }
+
+  // Don't interrupt an eye break — try again shortly after
+  if (timer.status === "break") {
+    await ensureStandUpScheduled(2 * 60_000);
+    return;
+  }
+
+  if (timer.status === "paused" || timer.status === "idle") {
+    return;
+  }
+
+  await beginStand();
+}
+
+async function beginStand() {
+  const settings = await getSettings();
+
+  await chrome.alarms.clear(STAND_UP_ALARM);
+  await captureReturnTab();
+
+  const prev = await getTimerState();
+  // Pause the eye work countdown while standing
+  let pausedRemainingMs = prev.pausedRemainingMs;
+  if (prev.status === "running" && prev.workEndsAt) {
+    pausedRemainingMs = Math.max(0, prev.workEndsAt - Date.now());
+    await chrome.alarms.clear(WORK_ALARM);
+  }
+
+  const standEndsAt = Date.now() + settings.standUpSeconds * 1000;
+  await saveTimerState({
+    ...prev,
+    status: "stand",
+    workEndsAt: null,
+    breakEndsAt: null,
+    standUpEndsAt: null,
+    standEndsAt,
+    pausedRemainingMs,
+    updatedAt: Date.now(),
+  });
+  await chrome.alarms.create(STAND_ALARM, { when: standEndsAt });
+  await updateBadge("stand", settings.standUpSeconds * 1000);
+
+  if (settings.notificationsEnabled) {
+    await showStandNotification(settings.standUpSeconds);
+  }
+
+  await openStandPage();
+}
+
+async function completeStand() {
+  await recordStand();
+  await chrome.alarms.clear(STAND_ALARM);
+  const timer = await getTimerState();
+  const remaining = timer.pausedRemainingMs;
+  if (remaining && remaining > 0) {
+    await startWorkCycle(remaining);
+  } else {
+    await startWorkCycle();
+  }
+  await ensureStandUpScheduled();
+  await new Promise((resolve) => setTimeout(resolve, 900));
+  await restoreWorkTabAndCloseOverlay();
+}
+
+async function skipStand() {
+  await chrome.alarms.clear(STAND_ALARM);
+  const timer = await getTimerState();
+  const remaining = timer.pausedRemainingMs;
+  await restoreWorkTabAndCloseOverlay();
+  if (remaining && remaining > 0) {
+    await startWorkCycle(remaining);
+  } else {
+    await startWorkCycle();
+  }
+  await ensureStandUpScheduled();
+}
+
+async function snoozeStand() {
+  const settings = await getSettings();
+  await chrome.alarms.clear(STAND_ALARM);
+  const timer = await getTimerState();
+  const remaining = timer.pausedRemainingMs;
+  await restoreWorkTabAndCloseOverlay();
+  if (remaining && remaining > 0) {
+    await startWorkCycle(remaining);
+  } else {
+    await startWorkCycle();
+  }
+  await ensureStandUpScheduled(settings.snoozeMinutes * 60_000);
+}
+
+async function onStandComplete() {
+  const timer = await getTimerState();
+  if (timer.status === "stand") {
+    await completeStand();
+  }
 }
 
 async function captureReturnTab() {
@@ -278,7 +511,6 @@ async function captureReturnTab() {
     if (!active?.id) return;
 
     const extensionOrigin = chrome.runtime.getURL("");
-    // Don't overwrite with the break page or other extension pages
     if (active.url?.startsWith(extensionOrigin)) return;
 
     await chrome.storage.session.set({
@@ -286,11 +518,11 @@ async function captureReturnTab() {
       [RETURN_WINDOW_KEY]: active.windowId,
     });
   } catch {
-    // Session storage / tab query may fail in rare cases — ignore
+    // ignore
   }
 }
 
-async function restoreWorkTabAndCloseBreak() {
+async function restoreWorkTabAndCloseOverlay() {
   const data = await chrome.storage.session.get([
     RETURN_TAB_KEY,
     RETURN_WINDOW_KEY,
@@ -311,23 +543,26 @@ async function restoreWorkTabAndCloseBreak() {
   }
 
   const breakUrl = chrome.runtime.getURL(BREAK_URL);
-  const breakTabs = await chrome.tabs.query({ url: breakUrl });
+  const standUrl = chrome.runtime.getURL(STAND_URL);
+  const overlayTabs = await chrome.tabs.query({
+    url: [breakUrl, standUrl],
+  });
   await Promise.all(
-    breakTabs
+    overlayTabs
       .map((tab) => tab.id)
       .filter((id): id is number => typeof id === "number")
       .map((id) => chrome.tabs.remove(id).catch(() => undefined)),
   );
 
-  await clearBreakNotifications();
+  await clearOverlayNotifications();
 }
 
-async function clearBreakNotifications() {
+async function clearOverlayNotifications() {
   try {
     const all = await chrome.notifications.getAll();
     await Promise.all(
       Object.keys(all)
-        .filter((id) => id.startsWith("respite-break"))
+        .filter((id) => id.startsWith("respite-break") || id.startsWith("respite-stand"))
         .map((id) => chrome.notifications.clear(id)),
     );
   } catch {
@@ -335,11 +570,9 @@ async function clearBreakNotifications() {
   }
 }
 
-async function openBreakPage() {
-  // Capture again in case beginBreak wasn't the entry point (e.g. notification click)
+async function openExtensionPage(path: string) {
   await captureReturnTab();
-
-  const url = chrome.runtime.getURL(BREAK_URL);
+  const url = chrome.runtime.getURL(path);
   const tabs = await chrome.tabs.query({ url });
   if (tabs[0]?.id) {
     await chrome.tabs.update(tabs[0].id, { active: true });
@@ -351,24 +584,30 @@ async function openBreakPage() {
   await chrome.tabs.create({ url, active: true });
 }
 
+async function openBreakPage() {
+  await openExtensionPage(BREAK_URL);
+}
+
+async function openStandPage() {
+  await openExtensionPage(STAND_URL);
+}
+
 async function completeBreak() {
   await recordBreak("completed");
-  await clearAlarms();
+  await clearEyeAlarms();
   await startWorkCycle();
-  // Brief pause so the break screen can show the completed state
   await new Promise((resolve) => setTimeout(resolve, 900));
-  await restoreWorkTabAndCloseBreak();
+  await restoreWorkTabAndCloseOverlay();
 }
 
 async function skipBreak() {
   await recordBreak("skipped");
-  await clearAlarms();
-  await restoreWorkTabAndCloseBreak();
+  await clearEyeAlarms();
+  await restoreWorkTabAndCloseOverlay();
   await startWorkCycle();
 }
 
 async function onBreakComplete() {
-  // Auto-complete if the break page didn't already
   const timer = await getTimerState();
   if (timer.status === "break") {
     await completeBreak();
@@ -385,6 +624,11 @@ async function restoreOrStart() {
     if (remaining > 1000) {
       await chrome.alarms.create(WORK_ALARM, { when: timer.workEndsAt });
       await updateBadge("work", remaining);
+      if (timer.standUpEndsAt && timer.standUpEndsAt > Date.now() + 1000) {
+        await chrome.alarms.create(STAND_UP_ALARM, { when: timer.standUpEndsAt });
+      } else {
+        await ensureStandUpScheduled();
+      }
       return;
     }
     await beginBreak();
@@ -403,13 +647,25 @@ async function restoreOrStart() {
     return;
   }
 
+  if (timer.status === "stand" && timer.standEndsAt) {
+    const remaining = timer.standEndsAt - Date.now();
+    if (remaining > 500) {
+      await chrome.alarms.create(STAND_ALARM, { when: timer.standEndsAt });
+      await updateBadge("stand", remaining);
+      await openStandPage();
+      return;
+    }
+    await completeStand();
+    return;
+  }
+
   if (timer.status === "paused" || timer.status === "idle") {
     await updateBadge(timer.status, timer.pausedRemainingMs ?? 0);
   }
 }
 
 async function updateBadge(
-  mode: "work" | "break" | "paused" | "idle",
+  mode: "work" | "break" | "stand" | "paused" | "idle",
   ms: number,
 ) {
   const minutes = Math.max(0, Math.ceil(ms / 60_000));
@@ -419,6 +675,9 @@ async function updateBadge(
   } else if (mode === "break") {
     await chrome.action.setBadgeBackgroundColor({ color: "#3D7EA6" });
     await chrome.action.setBadgeText({ text: "••" });
+  } else if (mode === "stand") {
+    await chrome.action.setBadgeBackgroundColor({ color: "#B8860B" });
+    await chrome.action.setBadgeText({ text: "↑" });
   } else if (mode === "paused") {
     await chrome.action.setBadgeBackgroundColor({ color: "#8A7A5C" });
     await chrome.action.setBadgeText({ text: "||" });

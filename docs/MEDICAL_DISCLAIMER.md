@@ -10,6 +10,8 @@ Respite helps you practice regular short visual breaks inspired by the commonly 
 
 Many eye-care organizations, including the American Academy of Ophthalmology, recommend regular breaks to ease temporary discomfort associated with prolonged screen use (often called digital eye strain).
 
+Respite can also nudge you to stand and stretch during long sitting sessions. That is a comfort/habit feature only.
+
 ## What Respite does not claim
 
 Respite does **not** claim to:
@@ -18,8 +20,9 @@ Respite does **not** claim to:
 - Cure or treat eye conditions
 - Prevent permanent vision deterioration
 - Improve refractive error (nearsightedness, farsightedness, astigmatism)
-- Guarantee eye health outcomes
-- Replace professional eye examinations or care
+- Prevent or treat back, neck, or spine pain or injury
+- Guarantee health outcomes
+- Replace professional eye or medical care
 
 ## Evidence note
 

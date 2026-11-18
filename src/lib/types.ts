@@ -1,4 +1,4 @@
-export type TimerStatus = "running" | "paused" | "break" | "idle";
+export type TimerStatus = "running" | "paused" | "break" | "stand" | "idle";
 
 export interface Settings {
   workMinutes: number;
@@ -11,6 +11,12 @@ export interface Settings {
   quietHoursStart: string; // "HH:MM" 24h
   quietHoursEnd: string;
   autoStart: boolean;
+  /** Gentle stand-and-stretch nudges (separate from eye breaks). */
+  standUpEnabled: boolean;
+  /** Minutes between stand-up nudges (e.g. 30 or 60). */
+  standUpMinutes: number;
+  /** How long the stand-up screen stays open (seconds). */
+  standUpSeconds: number;
 }
 
 export interface DayStats {
@@ -18,6 +24,7 @@ export interface DayStats {
   completed: number;
   skipped: number;
   snoozed: number;
+  stood: number;
 }
 
 export interface Stats {
@@ -31,7 +38,10 @@ export interface TimerState {
   status: TimerStatus;
   workEndsAt: number | null;
   breakEndsAt: number | null;
+  standUpEndsAt: number | null;
+  standEndsAt: number | null;
   pausedRemainingMs: number | null;
+  standPausedRemainingMs: number | null;
   updatedAt: number;
 }
 
@@ -46,13 +56,19 @@ export const DEFAULT_SETTINGS: Settings = {
   quietHoursStart: "22:00",
   quietHoursEnd: "07:00",
   autoStart: true,
+  standUpEnabled: true,
+  standUpMinutes: 60,
+  standUpSeconds: 45,
 };
 
 export const DEFAULT_TIMER_STATE: TimerState = {
   status: "paused",
   workEndsAt: null,
   breakEndsAt: null,
+  standUpEndsAt: null,
+  standEndsAt: null,
   pausedRemainingMs: null,
+  standPausedRemainingMs: null,
   updatedAt: Date.now(),
 };
 
@@ -64,7 +80,7 @@ export function todayKey(d = new Date()): string {
 }
 
 export function emptyDayStats(date = todayKey()): DayStats {
-  return { date, completed: 0, skipped: 0, snoozed: 0 };
+  return { date, completed: 0, skipped: 0, snoozed: 0, stood: 0 };
 }
 
 export const DEFAULT_STATS: Stats = {
@@ -84,5 +100,10 @@ export type Message =
   | { type: "COMPLETE_BREAK" }
   | { type: "TAKE_BREAK_NOW" }
   | { type: "OPEN_BREAK" }
+  | { type: "OPEN_STAND" }
+  | { type: "SKIP_STAND" }
+  | { type: "COMPLETE_STAND" }
+  | { type: "SNOOZE_STAND" }
+  | { type: "STAND_NOW" }
   | { type: "SETTINGS_UPDATED"; settings: Settings }
   | { type: "STATE"; payload: { settings: Settings; timer: TimerState; stats: Stats } };

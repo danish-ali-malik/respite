@@ -53,16 +53,20 @@ export function Popup() {
       ? timer.workEndsAt - now
       : timer.status === "break" && timer.breakEndsAt
         ? timer.breakEndsAt - now
-        : timer.pausedRemainingMs ?? 0;
+        : timer.status === "stand" && timer.standEndsAt
+          ? timer.standEndsAt - now
+          : timer.pausedRemainingMs ?? 0;
 
   const statusLabel =
     timer.status === "running"
-      ? "Next break in"
+      ? "Next eye break in"
       : timer.status === "break"
-        ? "Break in progress"
-        : timer.status === "idle"
-          ? "Paused — you're away"
-          : "Paused";
+        ? "Eye break in progress"
+        : timer.status === "stand"
+          ? "Stand-up in progress"
+          : timer.status === "idle"
+            ? "Paused — you're away"
+            : "Paused";
 
   const adherence = adherencePercent(stats.today.completed, stats.today.skipped);
 
@@ -72,8 +76,10 @@ export function Popup() {
       | "RESUME"
       | "START"
       | "TAKE_BREAK_NOW"
+      | "STAND_NOW"
       | "SNOOZE"
-      | "SKIP_BREAK",
+      | "SKIP_BREAK"
+      | "SKIP_STAND",
   ) {
     const res = (await sendMessage({ type })) as {
       type: "STATE";
@@ -111,9 +117,10 @@ export function Popup() {
         </p>
       </div>
 
-      <div className="mx-5 mb-4 grid grid-cols-3 gap-2 text-center">
-        <Stat label="Done" value={String(stats.today.completed)} />
-        <Stat label="Skipped" value={String(stats.today.skipped)} />
+      <div className="mx-5 mb-4 grid grid-cols-4 gap-2 text-center">
+        <Stat label="Eyes" value={String(stats.today.completed)} />
+        <Stat label="Stood" value={String(stats.today.stood ?? 0)} />
+        <Stat label="Skip" value={String(stats.today.skipped)} />
         <Stat label="Today" value={`${adherence}%`} />
       </div>
 
@@ -124,8 +131,16 @@ export function Popup() {
               className="rounded-xl bg-pine px-3 py-2.5 text-sm font-medium text-white transition hover:bg-pine-deep"
               onClick={() => void act("TAKE_BREAK_NOW")}
             >
-              Take a break now
+              Eye break now
             </button>
+            {settings.standUpEnabled && (
+              <button
+                className="rounded-xl border border-ink/10 bg-white/70 px-3 py-2 text-sm font-medium text-ink transition hover:bg-white"
+                onClick={() => void act("STAND_NOW")}
+              >
+                Stand up now
+              </button>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <button
                 className="rounded-xl border border-ink/10 bg-white/60 px-3 py-2 text-sm font-medium text-ink transition hover:bg-white"
@@ -140,6 +155,11 @@ export function Popup() {
                 Snooze {settings.snoozeMinutes}m
               </button>
             </div>
+            {settings.standUpEnabled && (
+              <p className="text-center text-[11px] text-ink-soft">
+                Stand-up nudge every {settings.standUpMinutes} min
+              </p>
+            )}
           </>
         )}
 
@@ -163,6 +183,23 @@ export function Popup() {
             <button
               className="rounded-xl border border-ink/10 bg-white/60 px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-white"
               onClick={() => void act("SKIP_BREAK")}
+            >
+              Skip
+            </button>
+          </div>
+        )}
+
+        {timer.status === "stand" && (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className="rounded-xl bg-[#8a7348] px-3 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+              onClick={() => void sendMessage({ type: "OPEN_STAND" })}
+            >
+              Open stand
+            </button>
+            <button
+              className="rounded-xl border border-ink/10 bg-white/60 px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-white"
+              onClick={() => void act("SKIP_STAND")}
             >
               Skip
             </button>

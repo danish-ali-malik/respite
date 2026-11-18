@@ -10,6 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         break: "src/break/index.html",
+        stand: "src/stand/index.html",
       },
     },
   },

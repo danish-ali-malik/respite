@@ -132,6 +132,35 @@ export function Options() {
             />
 
             <Toggle
+              label="Stand-up nudges"
+              checked={settings.standUpEnabled}
+              onChange={(standUpEnabled) => void save({ ...settings, standUpEnabled })}
+            />
+            {settings.standUpEnabled && (
+              <>
+                <NumberField
+                  label="Stand-up every (minutes)"
+                  hint="A gentle nudge to stand and stretch — try 30 or 60."
+                  value={settings.standUpMinutes}
+                  min={15}
+                  max={180}
+                  onChange={(standUpMinutes) =>
+                    void save({ ...settings, standUpMinutes })
+                  }
+                />
+                <NumberField
+                  label="Stand duration (seconds)"
+                  value={settings.standUpSeconds}
+                  min={15}
+                  max={180}
+                  onChange={(standUpSeconds) =>
+                    void save({ ...settings, standUpSeconds })
+                  }
+                />
+              </>
+            )}
+
+            <Toggle
               label="Desktop notifications"
               checked={settings.notificationsEnabled}
               onChange={(notificationsEnabled) =>
@@ -180,10 +209,9 @@ export function Options() {
         <section className="rounded-3xl border border-ink/8 bg-white/55 p-6 text-sm leading-relaxed text-ink-soft">
           <h2 className="font-display text-lg text-ink">Wellness, not medicine</h2>
           <p className="mt-2">
-            Respite helps you practice the 20-20-20 habit recommended by many eye
-            care professionals to ease temporary digital eye strain. It does not
-            claim to prevent or treat eye disease, improve refractive error, or
-            replace professional care.
+            Respite helps you practice the 20-20-20 habit and optional stand-up
+            nudges for long sitting days. It does not claim to prevent or treat
+            eye disease, back or spine conditions, or replace professional care.
           </p>
           <p className="mt-3">
             Privacy: settings and local habit stats stay in{" "}
