@@ -119,11 +119,17 @@ function framePage({ title, body, iframeSrc, width = 360, iframeHeight = 560 }) 
   }
   .stage {
     width: 1280px; height: 800px;
-    display: grid; place-items: center;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 48px;
+    padding: 0 72px 0 64px;
+    box-sizing: border-box;
     position: relative;
   }
   .caption {
-    position: absolute; left: 64px; top: 56px; max-width: 440px;
+    max-width: 420px;
+    justify-self: start;
   }
   .caption h1 {
     margin: 0; font-family: Georgia, "Times New Roman", serif;
@@ -137,6 +143,7 @@ function framePage({ title, body, iframeSrc, width = 360, iframeHeight = 560 }) 
     box-shadow: 0 24px 60px rgba(26,43,40,0.18);
     border: 1px solid rgba(26,43,40,0.08);
     background: white;
+    justify-self: end;
   }
   iframe { border: 0; width: 100%; height: ${iframeHeight}px; display: block; }
 </style>
