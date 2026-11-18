@@ -1,59 +1,82 @@
-# Chrome Web Store listing kit
+# Chrome Web Store listing kit (v0.1.2)
 
-Use these fields when you submit Respite in the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+Use these fields when you submit the **0.1.2** update in the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 
-Privacy policy URL (after GitHub Pages is live):
+Privacy policy URL:
 
 **https://danish-ali-malik.github.io/respite/privacy.html**
-
-Fallback (also acceptable):  
-https://github.com/danish-ali-malik/respite/blob/main/docs/PRIVACY.md
 
 ---
 
 ## Package to upload
 
-Zip the **contents** of `dist/` (so `manifest.json` is at the zip root):
+https://github.com/danish-ali-malik/respite/releases/tag/v0.1.2 → `respite-extension.zip`
+
+Or:
 
 ```bash
+git pull && npm install && npm run build
 cd dist && zip -r ../respite-extension.zip .
 ```
 
-Or upload the existing release asset `respite-extension.zip`.
+Manifest version must be **0.1.2** (larger than published **0.1.1** / **0.1.0**).
+
+---
+
+## What to update on this release
+
+| Item | Action |
+|---|---|
+| Package | Upload new zip (**0.1.2**) |
+| Short description | Update (stand-up mentioned) |
+| Detailed description | Replace with copy below |
+| Screenshots | Keep 1–3; **add stand-up screenshot** if possible |
+| Icon / promo tiles | No change required |
+| Privacy policy URL | Same URL (still valid) |
+| Single purpose | Update wording slightly (below) |
+| Permission justifications | Update `notifications` + `tabs` lines (below) |
+| Data usage | Still leave all collection boxes **unchecked**; certify all 3 |
+| Test instructions | Update (below) |
 
 ---
 
 ## Store listing
 
 ### Name
+*(unchanged)*  
 Respite — Eye Care for Developers
 
-### Summary (short description, ≤132 characters)
-Calm 20-20-20 eye-break reminders for developers. Idle-aware, local-only, no accounts. Wellness tool — not a medical device.
+### Summary (short description)
+
+```
+Gentle 20-20-20 eye breaks + optional stand-up nudges. Idle-aware, local-only. Wellness tool — not medical.
+```
 
 ### Description (detailed)
 
 ```
-Protect your eyes while you code.
+Protect your eyes — and take a stand — while you code.
 
-Respite is a free, open-source Chrome extension that gently reminds you to follow the 20-20-20 rule: every 20 minutes, look about 20 feet (6 metres) away for 20 seconds.
+Respite is a free, open-source Chrome extension for developers and other heavy computer users. It gently reminds you to follow the 20-20-20 rule: every 20 minutes, look about 20 feet (6 metres) away for 20 seconds.
 
-Built for developers and other heavy computer users who forget to take breaks mid-debug, mid-PR, or mid-deadline.
+You can also enable stand-up nudges (for example every 30 or 60 minutes) so long sitting days get a short stretch reset.
+
+Built for people who forget breaks mid-debug, mid-PR, or mid-deadline.
 
 WHAT YOU GET
-• Configurable work interval and break length (defaults to 20 / 20)
-• Optional stand-up nudges (e.g. every 30 or 60 minutes) to stretch during long sitting
-• Quiet notifications and calming full-tab break / stand screens
+• Configurable eye-break interval and length (defaults to 20 min / 20 sec)
+• Optional stand-up nudges (defaults to every 60 minutes)
+• Quiet notifications and calming full-tab eye-break / stand screens
 • Idle awareness — pauses when you step away
-• Snooze, pause, skip, or take a break now
+• Snooze, pause, skip, or take a break / stand now
 • Quiet hours for nights and focus blocks
-• Local habit stats (completed, stood, skipped, streak) — stored only on your device
+• Local habit stats (eyes, stood, skipped, streak) — stored only on your device
 
 PRIVACY FIRST
 No accounts. No analytics. No network requests. Settings and stats stay in local storage on your computer.
 
 IMPORTANT
-Respite is a wellness habit tool, not a medical device. It does not diagnose, treat, or prevent eye disease, and it does not replace professional eye care.
+Respite is a wellness habit tool, not a medical device. It does not diagnose, treat, or prevent eye disease or back/spine conditions, and it does not replace professional care.
 
 Open source (MIT): https://github.com/danish-ali-malik/respite
 ```
@@ -67,25 +90,33 @@ English
 
 ---
 
-## Graphic assets (in this folder)
+## Graphic assets
 
-| Asset | Path | Size |
+| Asset | Path | Notes for 0.1.2 |
 |---|---|---|
-| Store icon | `store/icons/icon-128.png` | 128×128 |
-| Screenshot 1 — Popup | `store/screenshots/01-popup-1280x800.png` | 1280×800 |
-| Screenshot 2 — Break | `store/screenshots/02-break-1280x800.png` | 1280×800 |
-| Screenshot 3 — Settings | `store/screenshots/03-settings-1280x800.png` | 1280×800 |
-| Small promo tile (optional) | `store/promo/small-tile-440x280.png` | 440×280 |
-| Marquee promo (optional) | `store/promo/marquee-1400x560.png` | 1400×560 |
+| Store icon | `store/icons/icon-128.png` | Keep |
+| Screenshot 1 — Popup | `store/screenshots/01-popup-1280x800.png` | Prefer a fresh capture showing “Stand up now” |
+| Screenshot 2 — Eye break | `store/screenshots/02-break-1280x800.png` | Keep |
+| Screenshot 3 — Settings | `store/screenshots/03-settings-1280x800.png` | Prefer a fresh capture showing stand-up settings |
+| Screenshot 4 — Stand up | *(capture locally)* | **Add this** — stand screen is the new feature |
+| Small promo tile | `store/promo/small-tile-440x280.png` | Optional keep |
+| Marquee | `store/promo/marquee-1400x560.png` | Optional; text still fine |
 
-Also upload the extension’s built-in `public/icons/icon128.png` if the dashboard asks for an icon from the package (already inside the zip).
+### How to capture a stand-up screenshot (1280×800)
+1. Load unpacked `dist/`
+2. Popup → **Stand up now**
+3. Screenshot the stand tab (or use a 1280×800 window)
+4. Upload as an extra store screenshot
 
 ---
 
 ## Privacy practices tab
 
 ### Single purpose
-Gently remind users to take short 20-20-20 eye breaks during screen work, with optional local habit stats.
+
+```
+Gently remind users to take short 20-20-20 eye breaks during screen work, with optional stand-up stretch nudges and local-only habit stats.
+```
 
 ### Remote code
 No, I am not using remote code.
@@ -93,44 +124,36 @@ No, I am not using remote code.
 ### Permission justifications
 
 **alarms**  
-Used to schedule reliable work-interval and break timers in the Manifest V3 service worker so reminders fire even when the popup is closed.
+Used to schedule reliable eye-break and stand-up timers in the Manifest V3 service worker so reminders fire even when the popup is closed.
 
 **idle**  
-Used to detect when the user is away from the computer so the timer can pause or reset and avoid unnecessary reminders.
+Used to detect when the user is away from the computer so timers can pause or reset and avoid unnecessary reminders.
 
 **notifications**  
-Used to show optional desktop notifications when a break is due. Users can disable notifications in settings.
+Used to show optional desktop notifications when an eye break or stand-up nudge is due. Users can disable notifications in settings.
 
 **storage**  
 Used to save user settings and local-only habit statistics on the device via chrome.storage.local. No data is sent to a server.
 
 **tabs**  
-Used only to open the extension’s break-screen page when a reminder starts. The extension does not read or modify website content and requests no host permissions.
+Used only to open the extension’s eye-break or stand-up screen when a reminder starts. The extension does not read or modify website content and requests no host permissions.
 
 ### Data usage / collection
-Select that you do **not** collect user data / personally identifiable information (or only store data locally on the user’s device, matching the dashboard wording).  
-Certify compliance with the limited use policies as shown in the form.
-
-### Privacy policy URL
-https://danish-ali-malik.github.io/respite/privacy.html
+Leave **all** data-type boxes unchecked.  
+Check **all three** certification boxes.  
+Privacy policy: https://danish-ali-malik.github.io/respite/privacy.html
 
 ---
 
-## Distribution
-
-- Visibility: **Public**
-- Pricing: **Free**
-- Regions: All regions (or your preference)
-
----
-
-## Test instructions (optional but helpful)
+## Test instructions (for reviewers)
 
 ```
 1. Install the extension and allow notifications if prompted.
-2. Open the popup — timer should be running (default 20 minutes).
-3. Click “Take a break now” — a break tab should open with a countdown.
-4. Open Options/Settings — change work interval and confirm it saves.
-5. Leave the machine idle for a few minutes — timer should pause/reset per idle settings.
-6. Confirm no network requests in DevTools (extension pages only use local storage).
+2. Open the popup — eye-break timer should be running (default 20 minutes).
+3. Click “Eye break now” — a break tab opens with a countdown, then returns to the previous work tab.
+4. Click “Stand up now” — a stand/stretch tab opens, then returns to the previous work tab.
+5. Open Settings — enable Stand-up nudges, set interval to 1 minute temporarily, confirm it saves.
+6. Wait for the stand-up notification/screen; snooze or skip works.
+7. Leave the machine idle for a few minutes — timers pause/reset per idle settings.
+8. Confirm no network requests from the extension (local storage only).
 ```
