@@ -28,15 +28,15 @@ Manifest version must be **0.1.3** (larger than published **0.1.2** / **0.1.1**)
 | Item | Action |
 |---|---|
 | Package | Upload new zip (**0.1.3**) |
-| Short description | Update (stand-up mentioned) |
+| Short description | Replace with copy below |
 | Detailed description | Replace with copy below |
-| Screenshots | Keep 1–3; **add stand-up screenshot** if possible |
+| Screenshots | **Replace all 4** with files in `store/screenshots/` |
 | Icon / promo tiles | No change required |
 | Privacy policy URL | Same URL (still valid) |
-| Single purpose | Update wording slightly (below) |
-| Permission justifications | Update `notifications` + `tabs` lines (below) |
+| Single purpose | Replace with copy below |
+| Permission justifications | Keep as below (same as 0.1.2) |
 | Data usage | Still leave all collection boxes **unchecked**; certify all 3 |
-| Test instructions | Update (below) |
+| Test instructions | Replace with copy below |
 
 ---
 
@@ -49,7 +49,7 @@ Respite — Eye Care for Developers
 ### Summary (short description)
 
 ```
-Gentle 20-20-20 eye breaks + optional stand-up nudges. Idle-aware, local-only. Wellness tool — not medical.
+20-20-20 eye breaks + stand-up nudges with live countdowns. Idle-aware, local-only. Not medical.
 ```
 
 ### Description (detailed)
@@ -59,13 +59,13 @@ Protect your eyes — and take a stand — while you code.
 
 Respite is a free, open-source Chrome extension for developers and other heavy computer users. It gently reminds you to follow the 20-20-20 rule: every 20 minutes, look about 20 feet (6 metres) away for 20 seconds.
 
-You can also enable stand-up nudges (for example every 30 or 60 minutes) so long sitting days get a short stretch reset.
+Optional stand-up nudges run on their own timer (from 1 minute up — try 30 or 60 for daily use) so long sitting days get a short stretch reset. The popup shows both the next eye break and the next stand-up at a glance.
 
 Built for people who forget breaks mid-debug, mid-PR, or mid-deadline.
 
 WHAT YOU GET
 • Configurable eye-break interval and length (defaults to 20 min / 20 sec)
-• Optional stand-up nudges (defaults to every 60 minutes)
+• Optional stand-up nudges with a live “next stand-up” countdown
 • Quiet notifications and calming full-tab eye-break / stand screens
 • Idle awareness — pauses when you step away
 • Snooze, pause, skip, or take a break / stand now
@@ -96,7 +96,7 @@ All screenshots are **1280×800** PNG.
 
 | Order | File | Shows |
 |---|---|---|
-| 1 | `store/screenshots/01-popup-1280x800.png` | Popup with eye break + stand up |
+| 1 | `store/screenshots/01-popup-1280x800.png` | Popup with next eye break + next stand-up |
 | 2 | `store/screenshots/02-break-1280x800.png` | Eye-break screen |
 | 3 | `store/screenshots/03-stand-1280x800.png` | Stand-up screen |
 | 4 | `store/screenshots/04-settings-1280x800.png` | Settings with stand-up nudges |
@@ -144,10 +144,10 @@ Privacy policy: https://danish-ali-malik.github.io/respite/privacy.html
 
 ```
 1. Install the extension and allow notifications if prompted.
-2. Open the popup — eye-break timer should be running (default 20 minutes).
+2. Open the popup — next eye-break countdown should be running; with stand-up enabled, “Next stand-up” also appears.
 3. Click “Eye break now” — a break tab opens with a countdown, then returns to the previous work tab.
 4. Click “Stand up now” — a stand/stretch tab opens, then returns to the previous work tab.
-5. Open Settings — enable Stand-up nudges, set interval to 1 minute temporarily, confirm it saves.
+5. Open Settings — enable Stand-up nudges, set interval to 1 minute, confirm it saves and the popup countdown resets.
 6. Wait for the stand-up notification/screen; snooze or skip works.
 7. Leave the machine idle for a few minutes — timers pause/reset per idle settings.
 8. Confirm no network requests from the extension (local storage only).

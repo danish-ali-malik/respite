@@ -175,10 +175,10 @@ const standHtml = inject(
 
 const popupShot = framePage({
   title: "Quiet reminders while you work",
-  body: "Eye breaks and stand-up nudges — pause, snooze, or take one now without leaving your flow.",
+  body: "See your next eye break and next stand-up at a glance — pause, snooze, or take one now.",
   iframeSrc: "/raw/popup",
   width: 340,
-  iframeHeight: 660,
+  iframeHeight: 680,
 });
 
 const optionsShot = `<!doctype html>
